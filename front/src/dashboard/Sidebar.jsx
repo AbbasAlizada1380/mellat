@@ -12,8 +12,8 @@ import { MdOutlineDashboardCustomize } from "react-icons/md";
 import { LucideUserRoundPlus } from "lucide-react";
 import { FaList } from "react-icons/fa";
 import { MdAddShoppingCart } from "react-icons/md";
-
 const Sidebar = ({ setActiveComponent }) => {
+  const BRAND_NAME = import.meta.env.VITE_BRAND_NAME;  
   const [selectedC, setSelectedC] = useState("home");
   const [activeC, setActiveC] = useState("home");
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -57,8 +57,8 @@ const Sidebar = ({ setActiveComponent }) => {
 
   const AllComponents = [
     { name: "صفحه اصلی", value: "home", icon: <MdOutlineDashboardCustomize /> },
-    // { name: "بسته جدید", value: "Packages", icon: <MdAddShoppingCart /> },
-    // { name: "لیست بسته ها", value: "PackageList", icon: <FaList /> },
+    { name: "ورزشکاران", value: "Athletes", icon: <MdAddShoppingCart /> },
+    { name:"فیس", value: "Fees", icon: <FaList /> },
     // { name: "مدیریت زون", value: "ZoneManagement", icon: <FaList /> },
     // { name: "مدیریت ترانزیت", value: "TransitWayManagement", icon: <FaList /> },
     // { name: "مدیریت لیست قیمت ها", value: "PriceListManagement", icon: <FaList /> },
@@ -134,7 +134,7 @@ const Sidebar = ({ setActiveComponent }) => {
                 />
               </div>
               <span className="text-lg font-semibold text-white whitespace-nowrap">
-             افغان کارگو
+                {BRAND_NAME}
               </span>
             </div>
 
@@ -183,7 +183,7 @@ const Sidebar = ({ setActiveComponent }) => {
               />
             </div>
             <span className="text-2xl font-semibold text-amber-500 whitespace-nowrap">
-              افغان کارگو
+             {BRAND_NAME}
             </span>
           </header>
         )}

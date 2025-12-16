@@ -19,6 +19,7 @@ import moment from "moment-jalaali";
 moment.loadPersian({ usePersianDigits: true, dialect: "persian-modern" });
 
 const Navbar = () => {
+  const BRAND_NAME=import.meta.env.VITE_BRAND_NAME;
   const [dateInfo, setDateInfo] = useState({
     day: "",
     month: "",
@@ -101,8 +102,7 @@ const Navbar = () => {
               <MdDashboard size={20} className="text-white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-gray-800"> افغان کارگو</h1>
-              <p className="text-xs text-gray-500">سیستم مدیریت افغان کارگو</p>
+              <h1 className="text-lg font-bold text-gray-800">{BRAND_NAME}</h1>
             </div>
           </div>
         </div>

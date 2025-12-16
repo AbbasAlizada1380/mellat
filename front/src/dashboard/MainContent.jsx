@@ -3,12 +3,17 @@ import Dashboard from "./pages/dashboard";
 // import S_Transaction from "./pages/RentManager";
 import Report from "./pages/reports";
 import AddUser from "./pages/AddUser";
+import Athletes from "./pages/athletes";
+import Fees from "./pages/Fees";
 const MainContent = ({ activeComponent }) => {
   const renderContent = () => {
     switch (activeComponent) {
       case "dashboard":
         return <Dashboard />;
-      case "ZoneManagement":
+      case "Athletes":
+        return <Athletes />; 
+      case "Fees":
+        return <Fees />;
       case "AddUser":
         return <AddUser />;
 
