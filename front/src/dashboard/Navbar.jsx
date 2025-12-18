@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
-import { signOutSuccess } from "../userSlice/userSlice";
+import { signOutSuccess } from "./auth/userSlice/userSlice";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ProfileModal from "./ProfileModal";
@@ -19,7 +19,7 @@ import moment from "moment-jalaali";
 moment.loadPersian({ usePersianDigits: true, dialect: "persian-modern" });
 
 const Navbar = () => {
-  const BRAND_NAME=import.meta.env.VITE_BRAND_NAME;
+  const BRAND_NAME = import.meta.env.VITE_BRAND_NAME;
   const [dateInfo, setDateInfo] = useState({
     day: "",
     month: "",
@@ -161,9 +161,8 @@ const Navbar = () => {
                 <div className="hidden lg:block text-right">
                   <p className="text-sm font-semibold text-gray-800 group-hover:text-cyan-800">
                     {currentUser
-                      ? `${currentUser.first_name || ""} ${
-                          currentUser.last_name || ""
-                        }`
+                      ? `${currentUser.first_name || ""} ${currentUser.last_name || ""
+                      }`
                       : "بارگذاری..."}
                   </p>
                   <p className="text-xs text-gray-500 capitalize">
@@ -172,9 +171,8 @@ const Navbar = () => {
                 </div>
 
                 <FaChevronDown
-                  className={`text-gray-400 transition-transform duration-200 ${
-                    isProfileDropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`text-gray-400 transition-transform duration-200 ${isProfileDropdownOpen ? "rotate-180" : ""
+                    }`}
                   size={12}
                 />
               </div>

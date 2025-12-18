@@ -120,7 +120,7 @@ const userSlice = createSlice({
     signOutSuccess: (state) => {
       state.currentUser = null;
       state.accessToken = null;
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem("authData");
       state.refreshToken = null;
       state.error = null;
       state.loading = false;

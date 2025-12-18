@@ -9,28 +9,34 @@ export function getTokenExpiration(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return payload.exp ? payload.exp * 1000 : null;
-  } catch {
+  } catch (err) {
+    console.error("Invalid token:", err);
     return null;
   }
 }
 
 export default function PrivateRoute() {
   const dispatch = useDispatch();
-  const { accessToken } = useSelector((state) => state.user);
-  const accesstoken = localStorage.getItem("authData")
-  if (!accesstoken) {
+  const { accessToken: reduxToken } = useSelector((state) => state.user);
+
+  // ✅ Fallback: read token from localStorage if Redux state is empty
+  const storedAuth = JSON.parse(localStorage.getItem("authData"));
+  const accessToken = reduxToken || storedAuth?.accessToken;
+
+  if (!accessToken) {
     return <Navigate to="/sign-in" replace />;
   }
 
   const expiresAtMs = getTokenExpiration(accessToken);
+  const now = Date.now();
 
-  // If expired → logout immediately
-  if (!expiresAtMs || Date.now() >= expiresAtMs) {
+  // If token expired → logout immediately
+  if (!expiresAtMs || now >= expiresAtMs) {
     dispatch(signOutSuccess());
     return <Navigate to="/sign-in" replace />;
   }
 
-  // Auto logout exactly at expiration time
+  // Auto logout at token expiration
   useEffect(() => {
     const timeLeft = expiresAtMs - Date.now();
 
@@ -91,8 +97,9 @@ export default function PrivateRoute() {
 
 // const PrivateRoute = () => {
 //   const { userData, accessToken } = useSelector((state) => state.user);
-//   console.log(userData);
-//   console.log(accessToken);
+
+  
+
 //   // Not logged in → redirect
 //   if (!userData && !accessToken) {
 //     return <Navigate to="/" replace />;

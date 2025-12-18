@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { FaBuilding, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
-import { signOutSuccess } from "../userSlice/userSlice";
+import { signOutSuccess } from "./auth/userSlice/userSlice";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
