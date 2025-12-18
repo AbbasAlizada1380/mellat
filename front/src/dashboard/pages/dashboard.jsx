@@ -1,4 +1,5 @@
 import React from "react";
+import FeesReport from "./FeesReport";
 
 const Dashboard = () => {
   const BRAND_NAME=import.meta.env.VITE_BRAND_NAME;
@@ -11,7 +12,7 @@ const Dashboard = () => {
 
       {/* Render the FinancialReports component */}
       <div className="mt-6">
-        {/* <AnalyticsDashboard /> */}
+        <FeesReport/>
       </div>
     </div>
   );
