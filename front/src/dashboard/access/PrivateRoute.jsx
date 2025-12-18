@@ -95,10 +95,12 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const PrivateRoute = () => {
-  const { user, token } = useSelector((state) => state.user);
+  const { userData, accessToken } = useSelector((state) => state.user);
+
+  
 
   // Not logged in → redirect
-  if (!user && !token) {
+  if (!userData && !accessToken) {
     return <Navigate to="/" replace />;
   }
 

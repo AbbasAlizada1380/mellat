@@ -12,13 +12,13 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* public routes all users */}
-          <Route path="/" element={<DashboardPage />} />
+          {/* <Route path="/" element={<DashboardPage />} /> */}
           <Route path="/forgot_password" element={<EmailEntry />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<Signin />} />
           <Route path="*" element={<Signin />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
           <Route element={<PrivateRoute />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
