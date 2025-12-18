@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; // optional, if you use routing
-import { signIn } from "../../userSlice/userSlice";
+import { signIn } from "./userSlice/userSlice";
 
 const useSignin = () => {
   const [email, setEmail] = useState("");

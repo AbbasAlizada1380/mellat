@@ -120,11 +120,12 @@ const userSlice = createSlice({
     signOutSuccess: (state) => {
       state.currentUser = null;
       state.accessToken = null;
+      localStorage.removeItem("accessToken");
       state.refreshToken = null;
       state.error = null;
       state.loading = false;
       console.log("loggedOut");
-      
+
     },
     clearUserError: (state) => {
       state.error = null;

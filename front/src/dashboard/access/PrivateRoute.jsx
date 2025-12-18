@@ -1,54 +1,49 @@
-// import { useSelector, useDispatch } from "react-redux";
-// import { Navigate, Outlet } from "react-router-dom";
-// import { useEffect } from "react";
-// import { signOutSuccess } from "../auth/userSlice/userSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { Navigate, Outlet } from "react-router-dom";
+import { useEffect } from "react";
+import { signOutSuccess } from "../auth/userSlice/userSlice";
 
-// export function getTokenExpiration(token) {
-//   if (!token) return null;
+export function getTokenExpiration(token) {
+  if (!token) return null;
 
-//   try {
-//     const base64Payload = token.split(".")[1];
-//     const payload = JSON.parse(atob(base64Payload));
-//     return payload.exp ? payload.exp * 1000 : null;
-//   } catch (err) {
-//     console.error("Invalid token:", err);
-//     return null;
-//   }
-// }
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
 
-// // export default function PrivateRoute() {
-// //   const dispatch = useDispatch();
-// //   const { accessToken } = useSelector((state) => state.user);
+export default function PrivateRoute() {
+  const dispatch = useDispatch();
+  const { accessToken } = useSelector((state) => state.user);
+  const accesstoken = localStorage.getItem("authData")
+  if (!accesstoken) {
+    return <Navigate to="/sign-in" replace />;
+  }
 
-// //   if (!accessToken) {
-// //     return <Navigate to="/sign-in" replace />;
-// //   }
+  const expiresAtMs = getTokenExpiration(accessToken);
 
-// //   const expiresAtMs = getTokenExpiration(accessToken);
-// //   const now = Date.now();
+  // If expired → logout immediately
+  if (!expiresAtMs || Date.now() >= expiresAtMs) {
+    dispatch(signOutSuccess());
+    return <Navigate to="/sign-in" replace />;
+  }
 
-// //   console.log(getTokenExpiration(accessToken));
-  
-// //   // If expired → logout immediately
-// //   if (!expiresAtMs || now >= expiresAtMs) {
-// //     dispatch(signOutSuccess());
-// //     return <Navigate to="/sign-in" replace />;
-// //   }
+  // Auto logout exactly at expiration time
+  useEffect(() => {
+    const timeLeft = expiresAtMs - Date.now();
 
-// //   // AUTO LOGOUT WHEN TIME REACHES EXPIRATION
-// //   useEffect(() => {
-// //     const timeLeft = expiresAtMs - now;
+    const timer = setTimeout(() => {
+      dispatch(signOutSuccess());
+      window.location.replace("/sign-in");
+    }, timeLeft);
 
-// //     const timer = setTimeout(() => {
-// //       dispatch(signOutSuccess());
-// //       window.location.href = "/sign-in"; // force redirect without refresh
-// //     }, timeLeft);
+    return () => clearTimeout(timer);
+  }, [dispatch, expiresAtMs]);
 
-// //     return () => clearTimeout(timer);
-// //   }, [dispatch, expiresAtMs]);
-
-// //   return <Outlet />;
-// // }
+  return <Outlet />;
+}
 
 
 // export default function PrivateRoute() {
@@ -91,21 +86,20 @@
 // }
 
 // dashboard/access/PrivateRoute.jsx
-import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+// import { Navigate, Outlet } from "react-router-dom";
+// import { useSelector } from "react-redux";
 
-const PrivateRoute = () => {
-  const { userData, accessToken } = useSelector((state) => state.user);
+// const PrivateRoute = () => {
+//   const { userData, accessToken } = useSelector((state) => state.user);
+//   console.log(userData);
+//   console.log(accessToken);
+//   // Not logged in → redirect
+//   if (!userData && !accessToken) {
+//     return <Navigate to="/" replace />;
+//   }
 
-  
+//   // Logged in → allow access
+//   return <Outlet />;
+// };
 
-  // Not logged in → redirect
-  if (!userData && !accessToken) {
-    return <Navigate to="/" replace />;
-  }
-
-  // Logged in → allow access
-  return <Outlet />;
-};
-
-export default PrivateRoute;
+// export default PrivateRoute;
