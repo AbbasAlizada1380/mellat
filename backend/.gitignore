@@ -11,6 +11,8 @@ package-lock.json
 dbconnection.js
 node_modules
 dist
+uploads
+
 .env
 .dbconnection.js
 dist-ssr

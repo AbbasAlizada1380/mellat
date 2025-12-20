@@ -1,34 +1,37 @@
-import multer from 'multer';
-import path from 'path';
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 
-// Set storage engine
-const storage = multer.diskStorage({
-  destination: './uploads/', // Specify the folder to store uploaded files
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // Generate a unique filename
-  }
-});
-
-// Initialize upload variable
-export const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5000000 }, // Limit the file size to 5MB
-  fileFilter: (req, file, cb) => {
-    checkFileType(file, cb);
-  }
-}); // Single file upload with 'profilePicture' field
-
-// Check file type
-const checkFileType = (file, cb) => {
-  const filetypes = /jpeg|jpg|png|gif/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb('Error: Images Only!');
+// Ensure folders exist
+const createDir = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
 };
 
-export default upload;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (file.fieldname === "document_pdf") {
+      const dir = "uploads/documents";
+      createDir(dir);
+      cb(null, dir);
+    } else if (file.fieldname === "photo") {
+      const dir = "uploads/photos";
+      createDir(dir);
+      cb(null, dir);
+    }
+  },
+  filename: (req, file, cb) => {
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(
+      null,
+      uniqueName + path.extname(file.originalname)
+    );
+  },
+});
+
+export const uploadAthleteFiles = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+});

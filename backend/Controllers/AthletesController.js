@@ -11,9 +11,10 @@ export const createAthlete = async (req, res) => {
       permanent_residence,
       current_residence,
       nic_number,
-      document_pdf,
-      photo,
     } = req.body;
+
+    const documentFile = req.files?.document_pdf?.[0];
+    const photoFile = req.files?.photo?.[0];
 
     if (
       !full_name ||
@@ -21,10 +22,12 @@ export const createAthlete = async (req, res) => {
       !permanent_residence ||
       !current_residence ||
       !nic_number ||
-      !document_pdf ||
-      !photo
+      !documentFile ||
+      !photoFile
     ) {
-      return res.status(400).json({ message: "All fields are required." });
+      return res.status(400).json({
+        message: "All fields are required.",
+      });
     }
 
     const athlete = await Athletes.create({
@@ -33,8 +36,8 @@ export const createAthlete = async (req, res) => {
       permanent_residence,
       current_residence,
       nic_number,
-      document_pdf,
-      photo,
+      document_pdf: documentFile.filename, // OR documentFile.path
+      photo: photoFile.filename,           // OR photoFile.path
     });
 
     res.status(201).json({
@@ -54,6 +57,7 @@ export const createAthlete = async (req, res) => {
     });
   }
 };
+
 
 /**
  * @desc   Get all athletes

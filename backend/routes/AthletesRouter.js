@@ -6,10 +6,18 @@ import {
   updateAthlete,
   deleteAthlete,
 } from "../Controllers/AthletesController.js";
+import { uploadAthleteFiles } from "../middleware/upload.js";
 
 const athleteRouter = express.Router();
 
-athleteRouter.post("/", createAthlete);
+athleteRouter.post(
+  "/",
+  uploadAthleteFiles.fields([
+    { name: "document_pdf", maxCount: 1 },
+    { name: "photo", maxCount: 1 },
+  ]),
+  createAthlete
+);;
 athleteRouter.get("/", getAllAthletes);
 athleteRouter.get("/:id", getAthleteById);
 athleteRouter.put("/:id", updateAthlete);

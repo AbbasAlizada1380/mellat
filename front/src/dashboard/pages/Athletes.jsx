@@ -16,9 +16,11 @@ export default function Athletes() {
     permanent_residence: "",
     current_residence: "",
     nic_number: "",
-    document_pdf: "",
-    photo: "",
+    document_pdf: null,
+    photo: null,
   });
+  const [showImage, setShowImage] = useState(false)
+  const [imageUrl, setImageUrl] = useState("")
 
   /* ================= FETCH ================= */
   const fetchAthletes = async () => {
@@ -38,7 +40,13 @@ export default function Athletes() {
 
   /* ================= FORM ================= */
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    setForm({ ...form, [name]: files[0] });
   };
 
   const resetForm = () => {
@@ -48,8 +56,8 @@ export default function Athletes() {
       permanent_residence: "",
       current_residence: "",
       nic_number: "",
-      document_pdf: "",
-      photo: "",
+      document_pdf: null,
+      photo: null,
     });
     setEditingId(null);
   };
@@ -58,11 +66,34 @@ export default function Athletes() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const formData = new FormData();
+    formData.append("full_name", form.full_name);
+    formData.append("father_name", form.father_name);
+    formData.append("permanent_residence", form.permanent_residence);
+    formData.append("current_residence", form.current_residence);
+    formData.append("nic_number", form.nic_number);
+
+    if (form.document_pdf) {
+      formData.append("document_pdf", form.document_pdf);
+    }
+
+    if (form.photo) {
+      formData.append("photo", form.photo);
+    }
+
     try {
+      console.log(formData);
+
       if (editingId) {
-        await axios.put(`${BASE_URL}/athletes/${editingId}`, form);
+        await axios.put(`${BASE_URL}/athletes/${editingId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       } else {
-        await axios.post(`${BASE_URL}/athletes`, form);
+        console.log(formData);
+
+        await axios.post(`${BASE_URL}/athletes`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
       fetchAthletes();
@@ -110,6 +141,7 @@ export default function Athletes() {
         <table className="w-full border">
           <thead className="bg-gray-100">
             <tr>
+              <th className="p-2 border">photo</th>
               <th className="p-2 border">Name</th>
               <th className="p-2 border">Father</th>
               <th className="p-2 border">NIC</th>
@@ -132,6 +164,19 @@ export default function Athletes() {
             ) : (
               athletes.map((a) => (
                 <tr key={a.id}>
+                  <td className="p-2 border">
+                    <div className="w-16 h-16 mx-auto">
+                      <img onClick={() => {
+                        setImageUrl(`${BASE_URL}/uploads/photos/${a.photo}`)
+                        setShowImage(!showImage)
+                      }}
+                        src={`${BASE_URL}/uploads/photos/${a.photo}`}
+                        alt={a.full_name}
+                        className="w-full h-full object-cover rounded border"
+
+                      />
+                    </div>
+                  </td>
                   <td className="p-2 border">{a.full_name}</td>
                   <td className="p-2 border">{a.father_name}</td>
                   <td className="p-2 border">{a.nic_number}</td>
@@ -171,8 +216,6 @@ export default function Athletes() {
                 ["permanent_residence", "Permanent Residence"],
                 ["current_residence", "Current Residence"],
                 ["nic_number", "NIC Number"],
-                ["document_pdf", "Document PDF URL"],
-                ["photo", "Photo URL"],
               ].map(([name, label]) => (
                 <input
                   key={name}
@@ -184,6 +227,22 @@ export default function Athletes() {
                   required
                 />
               ))}
+
+              <input
+                type="file"
+                name="document_pdf"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="border p-2 rounded col-span-2"
+              />
+
+              <input
+                type="file"
+                name="photo"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="border p-2 rounded col-span-2"
+              />
 
               <div className="col-span-2 flex justify-end gap-2 mt-3">
                 <button
@@ -207,6 +266,39 @@ export default function Athletes() {
           </div>
         </div>
       )}
+      {showImage && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
+          {/* Background click */}
+          <div
+            className="absolute inset-0"
+            onClick={() => setShowImage(false)}
+          />
+
+          {/* Image window */}
+          <div
+            className="relative z-10 bg-white rounded-lg shadow-xl 
+                 w-[420px] h-[360px] 
+                 flex items-center justify-center"
+          >
+            <img
+              src={imageUrl}
+              alt="Preview"
+              className="max-w-full max-h-full object-contain"
+            />
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowImage(false)}
+              className="absolute -top-3 -right-3 bg-red-600 text-white 
+                   w-8 h-8 rounded-full flex items-center justify-center shadow"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 }
