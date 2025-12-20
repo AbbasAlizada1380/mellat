@@ -59,6 +59,7 @@ const Sidebar = ({ setActiveComponent }) => {
     { name: "صفحه اصلی", value: "home", icon: <MdOutlineDashboardCustomize /> },
     { name: "ورزشکاران", value: "Athletes", icon: <MdAddShoppingCart /> },
     { name:"فیس", value: "Fees", icon: <FaList /> },
+    { name: "ورزشکاران فعال", value: "ActiveAthletes", icon: <MdAddShoppingCart /> },
     // { name: "مدیریت زون", value: "ZoneManagement", icon: <FaList /> },
     // { name: "مدیریت ترانزیت", value: "TransitWayManagement", icon: <FaList /> },
     // { name: "مدیریت لیست قیمت ها", value: "PriceListManagement", icon: <FaList /> },

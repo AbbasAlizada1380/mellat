@@ -2,37 +2,69 @@ import { Fees } from "../Models/Fees.js";
 import { Athletes } from "../Models/Athletes.js";
 import { Op } from "sequelize";
 
-export const getFeesInRange = async (req, res) => {
-  try {
-    const { startDate, endDate } = req.query; // get from query params
+export const getActiveFeesToday = async (req, res) => {
+    try {
+        const today = new Date();
 
-    if (!startDate || !endDate) {
-      return res.status(400).json({ message: "startDate and endDate are required" });
+        const fees = await Fees.findAll({
+            where: {
+                startDate: {
+                    [Op.lte]: today, // startDate <= today
+                },
+                endDate: {
+                    [Op.gte]: today, // endDate >= today
+                },
+            },
+            include: [
+                {
+                    model: Athletes,
+                    as: "athlete",
+                    attributes: ["id", "full_name", "nic_number"],
+                },
+            ],
+            order: [["startDate", "ASC"]],
+        });
+
+        res.status(200).json(fees);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching active fees",
+            error: error.message,
+        });
     }
+};
 
-    const fees = await Fees.findAll({
-      where: {
-        endDate: {
-          [Op.between]: [new Date(startDate), new Date(endDate)],
-        },
-      },
-      include: [
-        {
-          model: Athletes,
-          as: "athlete",
-          attributes: ["id", "full_name", "nic_number"],
-        },
-      ],
-      order: [["createdAt", "DESC"]],
-    });
+export const getFeesInRange = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.query; // get from query params
 
-    res.status(200).json(fees);
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching fees in range",
-      error: error.message,
-    });
-  }
+        if (!startDate || !endDate) {
+            return res.status(400).json({ message: "startDate and endDate are required" });
+        }
+
+        const fees = await Fees.findAll({
+            where: {
+                endDate: {
+                    [Op.between]: [new Date(startDate), new Date(endDate)],
+                },
+            },
+            include: [
+                {
+                    model: Athletes,
+                    as: "athlete",
+                    attributes: ["id", "full_name", "nic_number"],
+                },
+            ],
+            order: [["createdAt", "DESC"]],
+        });
+
+        res.status(200).json(fees);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching fees in range",
+            error: error.message,
+        });
+    }
 };
 
 /**
@@ -196,11 +228,11 @@ export const deleteFee = async (req, res) => {
 };
 
 Athletes.hasMany(Fees, {
-  foreignKey: "athleteId",
-  as: "fees",
+    foreignKey: "athleteId",
+    as: "fees",
 });
 
 Fees.belongsTo(Athletes, {
-  foreignKey: "athleteId",
-  as: "athlete",
+    foreignKey: "athleteId",
+    as: "athlete",
 });

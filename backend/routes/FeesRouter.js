@@ -6,11 +6,13 @@ import {
   updateFee,
   deleteFee,
   getFeesInRange,
+  getActiveFeesToday,
 } from "../Controllers/FeesController.js";
 
 const feesRouter = express.Router();
 
 feesRouter.post("/", createFee);
+feesRouter.get("/active", getActiveFeesToday);
 feesRouter.get("/", getAllFees);
 feesRouter.get("/range*", getFeesInRange);
 feesRouter.get("/:id", getFeeById);
