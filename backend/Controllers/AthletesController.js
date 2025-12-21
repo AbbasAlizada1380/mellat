@@ -65,11 +65,26 @@ export const createAthlete = async (req, res) => {
  */
 export const getAllAthletes = async (req, res) => {
   try {
-    const athletes = await Athletes.findAll({
-      order: [["createdAt", "DESC"]],
-    });
+    // pagination params
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-    res.status(200).json(athletes);
+    const { rows: athletes, count: totalItems } =
+      await Athletes.findAndCountAll({
+        order: [["createdAt", "DESC"]],
+        limit,
+        offset,
+      });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      data: athletes,
+      currentPage: page,
+      totalPages,
+      totalItems,
+    });
   } catch (error) {
     res.status(500).json({
       message: "Error fetching athletes",

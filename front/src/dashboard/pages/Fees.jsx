@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import Pagination from "../pagination/Pagination";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -9,6 +10,9 @@ export default function Fees() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10;
 
   const [form, setForm] = useState({
     startDate: "",
@@ -19,22 +23,34 @@ export default function Fees() {
   });
 
   /* ================= FETCH ================= */
-  const fetchFees = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`${BASE_URL}/fees/`);
-      // Ensure each fee has a calculated 'remained' field
-      const feesWithRemaining = res.data.map(fee => ({
-        ...fee,
-        remained: fee.total - (fee.received || 0)
-      }));
-      setFees(feesWithRemaining);
-    } catch (err) {
-      alert("Failed to load fees: " + (err.response?.data?.message || err.message));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const fetchFees = useCallback(
+    async (page = currentPage) => {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          `${BASE_URL}/fees?page=${page}&limit=${limit}`
+        );
+
+        const feesWithRemaining = res.data.data.map((fee) => ({
+          ...fee,
+          remained: fee.total - (fee.received || 0),
+        }));
+
+        setFees(feesWithRemaining);
+        setCurrentPage(res.data.currentPage);
+        setTotalPages(res.data.totalPages);
+      } catch (err) {
+        alert(
+          "Failed to load fees: " +
+          (err.response?.data?.message || err.message)
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [currentPage]
+  );
+
 
   // Fetch athletes ONLY when the modal is about to open
   const fetchAthletesForModal = useCallback(async () => {
@@ -47,9 +63,8 @@ export default function Fees() {
   }, []);
 
   useEffect(() => {
-    fetchFees();
-    // REMOVED fetchAthletes() from here to prevent unnecessary calls
-  }, [fetchFees]);
+    fetchFees(currentPage);
+  }, [currentPage]);
 
   /* ================= FORM ================= */
   const handleChange = (e) => {
@@ -197,6 +212,12 @@ export default function Fees() {
             )}
           </tbody>
         </table>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+
       </div>
 
       {/* MODAL */}

@@ -3,36 +3,52 @@ import { Athletes } from "../Models/Athletes.js";
 import { Op } from "sequelize";
 
 export const getActiveFeesToday = async (req, res) => {
-    try {
-        const today = new Date();
+  try {
+    const today = new Date();
 
-        const fees = await Fees.findAll({
-            where: {
-                startDate: {
-                    [Op.lte]: today, // startDate <= today
-                },
-                endDate: {
-                    [Op.gte]: today, // endDate >= today
-                },
-            },
-            include: [
-                {
-                    model: Athletes,
-                    as: "athlete",
-                    attributes: ["id", "full_name", "nic_number"],
-                },
-            ],
-            order: [["startDate", "ASC"]],
-        });
+    // pagination params
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-        res.status(200).json(fees);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error fetching active fees",
-            error: error.message,
-        });
-    }
+    const { rows: fees, count: totalItems } =
+      await Fees.findAndCountAll({
+        where: {
+          startDate: {
+            [Op.lte]: today, // startDate <= today
+          },
+          endDate: {
+            [Op.gte]: today, // endDate >= today
+          },
+        },
+        include: [
+          {
+            model: Athletes,
+            as: "athlete",
+            attributes: ["id", "full_name", "nic_number","photo"],
+          },
+        ],
+        order: [["startDate", "ASC"]],
+        limit,
+        offset,
+      });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      data: fees,
+      currentPage: page,
+      totalPages,
+      totalItems,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching active fees",
+      error: error.message,
+    });
+  }
 };
+
 
 export const getFeesInRange = async (req, res) => {
     try {
@@ -120,26 +136,42 @@ export const createFee = async (req, res) => {
  * @route  GET /api/fees
  */
 export const getAllFees = async (req, res) => {
-    try {
-        const fees = await Fees.findAll({
-            include: [
-                {
-                    model: Athletes,
-                    as: "athlete",
-                    attributes: ["id", "full_name", "nic_number"],
-                },
-            ],
-            order: [["createdAt", "DESC"]],
-        });
+  try {
+    // query params
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-        res.status(200).json(fees);
-    } catch (error) {
-        res.status(500).json({
-            message: "Error fetching fees",
-            error: error.message,
-        });
-    }
+    // query with pagination
+    const { rows: fees, count: totalItems } = await Fees.findAndCountAll({
+      include: [
+        {
+          model: Athletes,
+          as: "athlete",
+          attributes: ["id", "full_name", "nic_number"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+    });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      data: fees,
+      currentPage: page,
+      totalPages,
+      totalItems,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching fees",
+      error: error.message,
+    });
+  }
 };
+
 
 /**
  * @desc   Get fee by ID

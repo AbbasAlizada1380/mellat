@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Pagination from "../pagination/Pagination"; // Make sure to import your Pagination component
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-
 
 export default function Athletes() {
   const [athletes, setAthletes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalAthletes, setTotalAthletes] = useState(0);
+  const itemsPerPage = 10; // You can adjust this as needed
 
   const [form, setForm] = useState({
     full_name: "",
@@ -22,12 +28,28 @@ export default function Athletes() {
   const [showImage, setShowImage] = useState(false)
   const [imageUrl, setImageUrl] = useState("")
 
-  /* ================= FETCH ================= */
-  const fetchAthletes = async () => {
+  /* ================= FETCH with Pagination ================= */
+  const fetchAthletes = async (page = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${BASE_URL}/athletes`);
-      setAthletes(res.data);
+      const res = await axios.get(`${BASE_URL}/athletes`, {
+        params: {
+          page: page,
+          limit: itemsPerPage
+        }
+      });
+      if (res.data.data) {
+        setAthletes(res.data.data);
+        setTotalAthletes(res.data.totalItems);
+        setTotalPages(res.data.totalPages);
+        setCurrentPage(res.data.currentPage);
+
+      } else {
+        // If backend doesn't support pagination, handle client-side pagination
+        setAthletes(res.data);
+        setTotalAthletes(res.data.length);
+        setTotalPages(Math.ceil(res.data.length / itemsPerPage));
+      }
     } catch (err) {
       alert("Failed to load athletes");
     }
@@ -35,8 +57,8 @@ export default function Athletes() {
   };
 
   useEffect(() => {
-    fetchAthletes();
-  }, []);
+    fetchAthletes(currentPage);
+  }, [currentPage]);
 
   /* ================= FORM ================= */
   const handleChange = (e) => {
@@ -82,21 +104,17 @@ export default function Athletes() {
     }
 
     try {
-      console.log(formData);
-
       if (editingId) {
         await axios.put(`${BASE_URL}/athletes/${editingId}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
-        console.log(formData);
-
         await axios.post(`${BASE_URL}/athletes`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       }
 
-      fetchAthletes();
+      fetchAthletes(currentPage); // Refresh current page
       setOpen(false);
       resetForm();
     } catch (err) {
@@ -117,11 +135,28 @@ export default function Athletes() {
 
     try {
       await axios.delete(`${BASE_URL}/athletes/${id}`);
-      fetchAthletes();
+      fetchAthletes(currentPage); // Refresh current page
     } catch {
       alert("Delete failed");
     }
   };
+
+  /* ================= PAGINATION HANDLER ================= */
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  /* ================= CLIENT-SIDE PAGINATION FALLBACK ================= */
+  // If your backend doesn't support pagination, use this:
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return athletes.slice(startIndex, endIndex);
+  };
+
+  // Determine which data to display
+  const displayAthletes = athletes.length > 0 && athletes[0].id ? 
+    getPaginatedData() : athletes;
 
   /* ================= UI ================= */
   return (
@@ -151,18 +186,18 @@ export default function Athletes() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="4" className="text-center p-4">
+                <td colSpan="5" className="text-center p-4">
                   Loading...
                 </td>
               </tr>
-            ) : athletes.length === 0 ? (
+            ) : displayAthletes.length === 0 ? (
               <tr>
-                <td colSpan="4" className="text-center p-4">
+                <td colSpan="5" className="text-center p-4">
                   No data found
                 </td>
               </tr>
             ) : (
-              athletes.map((a) => (
+              displayAthletes.map((a) => (
                 <tr key={a.id}>
                   <td className="p-2 border">
                     <div className="w-16 h-16 mx-auto">
@@ -173,7 +208,6 @@ export default function Athletes() {
                         src={`${BASE_URL}/uploads/photos/${a.photo}`}
                         alt={a.full_name}
                         className="w-full h-full object-cover rounded border"
-
                       />
                     </div>
                   </td>
@@ -200,6 +234,14 @@ export default function Athletes() {
           </tbody>
         </table>
       </div>
+
+      {/* PAGINATION - Only show if there are multiple pages */}
+     
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
 
       {/* MODAL */}
       {open && (
@@ -266,15 +308,15 @@ export default function Athletes() {
           </div>
         </div>
       )}
+      
+      {/* IMAGE MODAL */}
       {showImage && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
-          {/* Background click */}
           <div
             className="absolute inset-0"
             onClick={() => setShowImage(false)}
           />
-
-          {/* Image window */}
+          
           <div
             className="relative z-10 bg-white rounded-lg shadow-xl 
                  w-[420px] h-[360px] 
@@ -286,7 +328,6 @@ export default function Athletes() {
               className="max-w-full max-h-full object-contain"
             />
 
-            {/* Close button */}
             <button
               onClick={() => setShowImage(false)}
               className="absolute -top-3 -right-3 bg-red-600 text-white 
@@ -297,8 +338,6 @@ export default function Athletes() {
           </div>
         </div>
       )}
-
-
     </div>
   );
 }
