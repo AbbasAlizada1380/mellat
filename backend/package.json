@@ -4,12 +4,19 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "seed-athletes": "node generateAthleteRecords.js generate 100 1 3",
+    "seed-athletes-light": "node generateAthleteRecords.js generate 20 0 2",
+    "seed-fees": "node generateAthleteRecords.js generate-fees 1 3",
+    "clear-all": "node generateAthleteRecords.js delete",
+    "show-stats": "node generateAthleteRecords.js stats",
+    "show-sample": "node generateAthleteRecords.js sample"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@faker-js/faker": "^10.1.0",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",

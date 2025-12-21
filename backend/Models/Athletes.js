@@ -27,7 +27,6 @@ export const Athletes = sequelize.define(
     nic_number: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
 
     // Path or URL to uploaded PDF document

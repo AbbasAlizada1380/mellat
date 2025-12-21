@@ -5,6 +5,7 @@ import {
   getAthleteById,
   updateAthlete,
   deleteAthlete,
+  searchAthletes,
 } from "../Controllers/AthletesController.js";
 import { uploadAthleteFiles } from "../middleware/upload.js";
 
@@ -17,7 +18,8 @@ athleteRouter.post(
     { name: "photo", maxCount: 1 },
   ]),
   createAthlete
-);;
+);
+athleteRouter.get('/search', searchAthletes);
 athleteRouter.get("/", getAllAthletes);
 athleteRouter.get("/:id", getAthleteById);
 athleteRouter.put("/:id", updateAthlete);

@@ -1,8 +1,91 @@
 import { Athletes } from "../Models/Athletes.js"
-/**
- * @desc   Create new athlete
- * @route  POST /api/athletes
- */
+import { Op } from "sequelize";
+
+export const searchAthletes = async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.trim() === '') {
+      return res.status(400).json({
+        message: "Search query is required",
+      });
+    }
+
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Build search conditions
+    const searchConditions = {
+      [Op.or]: [
+        {
+          full_name: {
+            [Op.like]: `%${query}%`
+          }
+        },
+        {
+          father_name: {
+            [Op.like]: `%${query}%`
+          }
+        },
+        {
+          nic_number: {
+            [Op.like]: `%${query}%`
+          }
+        },
+        {
+          permanent_residence: {
+            [Op.like]: `%${query}%`
+          }
+        },
+        {
+          current_residence: {
+            [Op.like]: `%${query}%`
+          }
+        }
+      ]
+    };
+
+    // Execute search with pagination
+    const { rows: athletes, count: totalItems } = await Athletes.findAndCountAll({
+      where: searchConditions,
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+    });
+
+    // Prepare response
+    const response = {
+      message: "Search completed successfully",
+      data: athletes,
+      meta: {
+        currentPage: page,
+        totalPages: Math.ceil(totalItems / limit),
+        totalItems,
+        itemsPerPage: limit,
+        searchQuery: query,
+        searchResultsCount: totalItems,
+      }
+    };
+
+    // If no results found
+    if (totalItems === 0) {
+      return res.status(200).json({
+        ...response,
+        message: "No athletes found matching your search criteria",
+      });
+    }
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Search error:", error);
+    res.status(500).json({
+      message: "Error searching athletes",
+      error: error.message,
+    });
+  }
+};
 export const createAthlete = async (req, res) => {
   try {
     const {

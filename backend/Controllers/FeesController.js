@@ -1,7 +1,108 @@
 import { Fees } from "../Models/Fees.js";
 import { Athletes } from "../Models/Athletes.js";
 import { Op } from "sequelize";
+export const searchFeesByAthlete = async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.trim() === '') {
+      return res.status(400).json({
+        message: "Search query is required",
+      });
+    }
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    // Build search conditions for Athlete model
+    const athleteSearchConditions = {
+      [Op.or]: [
+        {
+          full_name: {
+            [Op.like]: `%${query}%`
+          }
+        },
+        {
+          father_name: {
+            [Op.like]: `%${query}%`
+          }
+        },
+        {
+          nic_number: {
+            [Op.like]: `%${query}%`
+          }
+        }
+      ]
+    };
+
+    // First, find athletes that match the search criteria
+    const matchingAthletes = await Athletes.findAll({
+      where: athleteSearchConditions,
+      attributes: ['id'],
+      raw: true
+    });
+
+    // Extract athlete IDs
+    const athleteIds = matchingAthletes.map(athlete => athlete.id);
+
+    // If no athletes found, return empty result
+    if (athleteIds.length === 0) {
+      return res.status(200).json({
+        message: "No fees found for athletes matching your search criteria",
+        data: [],
+        meta: {
+          currentPage: page,
+          totalPages: 0,
+          totalItems: 0,
+          itemsPerPage: limit,
+          searchQuery: query,
+        }
+      });
+    }
+
+    // Now find fees for these athletes
+    const { rows: fees, count: totalItems } = await Fees.findAndCountAll({
+      where: {
+        athleteId: {
+          [Op.in]: athleteIds
+        }
+      },
+      include: [
+        {
+          model: Athletes,
+          as: "athlete",
+          attributes: ["id", "full_name", "father_name", "nic_number", "photo"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit,
+      offset,
+    });
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      message: "Search completed successfully",
+      data: fees,
+      meta: {
+        currentPage: page,
+        totalPages,
+        totalItems,
+        itemsPerPage: limit,
+        searchQuery: query,
+        matchingAthletesCount: athleteIds.length,
+      }
+    });
+  } catch (error) {
+    console.error("Search fees error:", error);
+    res.status(500).json({
+      message: "Error searching fees",
+      error: error.message,
+    });
+  }
+};
 export const getActiveFeesToday = async (req, res) => {
   try {
     const today = new Date();

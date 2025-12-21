@@ -7,13 +7,15 @@ import {
   deleteFee,
   getFeesInRange,
   getActiveFeesToday,
+  searchFeesByAthlete,
 } from "../Controllers/FeesController.js";
 
 const feesRouter = express.Router();
 
 feesRouter.post("/", createFee);
-feesRouter.get("/active", getActiveFeesToday);
 feesRouter.get("/", getAllFees);
+feesRouter.get("/active", getActiveFeesToday);
+feesRouter.get('/search', searchFeesByAthlete);
 feesRouter.get("/range*", getFeesInRange);
 feesRouter.get("/:id", getFeeById);
 feesRouter.put("/:id", updateFee);
